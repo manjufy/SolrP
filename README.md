@@ -1,0 +1,4 @@
+SolrP
+=====
+
+PHP Solr-Client
