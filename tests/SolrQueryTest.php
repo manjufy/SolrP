@@ -109,4 +109,48 @@ class SolrQueryTest extends \PHPUnit_Framework_TestCase
         $query->addSortField(1);
     }
 
+    public function testAddField()
+    {
+        $query = new SolrQuery();
+        $fieldList = $query->addField('field1');
+        $this->assertCount(1, $fieldList);
+
+        $fieldList = $query->addField('field2');
+        $this->assertSame(array('field1', 'field2'), $fieldList);
+    }
+
+    public function testAddFieldDoesNotContainsRepeatedElements()
+    {
+        $query = new SolrQuery();
+        $query->addField('field1');
+        $query->addField('field2');
+        $fieldArray = $query->addField('field1');
+
+        $this->assertCount(2, $fieldArray);
+        $this->assertSame($fieldArray, $query->getFieldsList());
+    }
+    
+    public function testSetFieldList(){
+        $query = new SolrQuery();
+        $fieldList = $query->setFieldList(
+            array('field1', 'field2', 'field3', 'field2'));
+        
+        $this->assertEquals(array('field1','field2', 'field3'), $fieldList);
+        $this->assertCount(3, $fieldList);
+    }
+
+    public function testResetFieldList()
+    {
+        $query = new SolrQuery();
+        $query->addField('field1');
+
+        $query->resetFieldList();
+        $this->assertEmpty($query->resetFieldList());
+    }
+
+    public function testAssemble()
+    {
+        
+    }
+
 }

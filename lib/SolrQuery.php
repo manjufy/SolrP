@@ -36,7 +36,7 @@ class SolrQuery
      * Fields Array
      * @var array
      */
-    private $_fields = array();
+    private $_fieldList = array();
 
     /**
      * Parameters array
@@ -181,7 +181,7 @@ class SolrQuery
 
         return $this->_sortFields;
     }
-    
+
     /**
      * Parses the option and let it ready to be used by addSortField.
      * 
@@ -201,6 +201,68 @@ class SolrQuery
         }
 
         return array($fieldName, $orientation);
+    }
+
+    /**
+     * Add a field to the field list.
+     * 
+     * Returns the list of fields already set
+     * 
+     * @param string $field
+     * 
+     * @return array 
+     */
+    public function addField($field)
+    {
+        if (is_string($field) && !empty($field)) {
+            $this->_fieldList[] = $field;
+            $this->_fieldList = array_unique($this->_fieldList);
+        }
+        return $this->_fieldList;
+    }
+
+    /**
+     * Return the field list set
+     * 
+     * @return array
+     */
+    public function getFieldsList()
+    {
+        return $this->_fieldList;
+    }
+
+    /**
+     * Sets multiple field list at the same time.
+     * 
+     * If an empty array is passed as parameters the field list will be
+     * reset. Same effect of using resetFieldList
+     * 
+     * @param array $fields
+     * 
+     * @return array
+     */
+    public function setFieldList(array $fields)
+    {
+        $this->_fieldList = array_unique($fields, SORT_REGULAR);
+        return $this->_fieldList;
+    }
+
+    /**
+     * Reset fieldList to its default value witch is an empty array
+     * 
+     * FieldList can also be reset by passing setFieldList an empty array,
+     * e.g. $this->setFieldList(array());
+     * 
+     * @return void
+     */
+    public function resetFieldList()
+    {
+        $this->_fieldList = array();
+    }
+
+    public function assemble()
+    {
+        
     }
 
 }
