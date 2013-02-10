@@ -1,7 +1,5 @@
 <?php
 
-namespace PSolr;
-
 class SolrServer 
 {
     public $host = 'localhost';
