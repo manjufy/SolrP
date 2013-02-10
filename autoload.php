@@ -2,14 +2,15 @@
 
 function PSolrAutoload($class)
 {
-    $path = array_slice(explode("\\", $class), 1);
+    $path = str_replace('\\', '/', $class);
+
     $file = LIBRARY_DIR . 
-            DIRECTORY_SEPARATOR . 
-            implode(DIRECTORY_SEPARATOR, $path) . '.php';
-    
+            DIRECTORY_SEPARATOR . $path . '.php';
+
     if (file_exists($file)) {
         include_once $file;
     }
+    
 }
 
 spl_autoload_register('PSolrAutoload');

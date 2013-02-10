@@ -1,8 +1,6 @@
 <?php
 
-include_once "../bootstrap.php";
-
-use PSolr\SolrServer;
+include_once dirname(__FILE__) ."/../bootstrap.php";
 
 class SolrServerTest extends \PHPUnit_Framework_TestCase{
     
@@ -12,7 +10,7 @@ class SolrServerTest extends \PHPUnit_Framework_TestCase{
     
     public function testSolrServer(){
         $server = new SolrServer();
-        $this->assertInstanceOf("PSolr\SolrServer", $server);
+        $this->assertInstanceOf("SolrServer", $server);
         
         $expected = 'http://localhost';
         $this->assertEquals($expected, (string) $server);
