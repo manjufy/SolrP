@@ -260,9 +260,130 @@ class SolrQuery
         $this->_fieldList = array();
     }
 
-    public function assemble()
+    public function getParams()
     {
-        
+        return $this->_params;
+    }
+
+    /**
+     * Params must be an multi-dimensional array with the following structure
+     * 
+     * if $params is an empty array the params will be reset to its original value
+     * which is an empty 
+     * 
+     * array( 
+     *     'param1' => array(['value1'], '[valueN]',
+     *      ...
+     *     'paramM' => 'value1', 'valueNM'  ));
+     * 
+     * @param array $params
+     */
+    public function setParams(array $params)
+    {
+
+        if (!self::isValidParamsStructure($params)) {
+            throw new Exceptions\InvalidStructureException();
+        }
+
+        if (empty($params)) {
+            $this->resetParams();
+        } else {
+            foreach ($params as $paramKey => $values) {
+                $this->setParam($paramKey, $values);
+            }
+        }
+        return $this->_params;
+    }
+
+    /**
+     * Reset param to its original value
+     * 
+     * @return void
+     */
+    public function resetParams()
+    {
+        $this->_params = array();
+    }
+
+    /**
+     * Set Multiple values to the same param at the same time
+     * 
+     * @param string $name
+     * 
+     * @param array $values
+     * 
+     * @return array
+     * 
+     */
+    public function setParam($name, array $values)
+    {
+        $params = isset($this->_params[$name]) ? $this->_params[$name] : array();
+        $params += $values;
+
+        return $this->_params[$name] = array_unique($params);
+    }
+
+    /**
+     * Validate params structure
+     * 
+     * @return boolean
+     */
+    public static function isValidParamsStructure(array $data)
+    {
+        $return = true;
+        foreach ($data as $key => $value) {
+            $return &= (is_string($key) && is_array($value));
+        }
+
+        return (boolean) $return;
+    }
+
+    /**
+     * Sets a new parameters to parameter list.
+     * 
+     * All parameters might be muti-valued  and are grouped in a 
+     * multi-dimensional array e.g.
+     * array( 
+     *      'param1' => array('value1', 'valueN'),
+     *      ...
+     *      'paramM' => array('value1', 'valueNM'));
+     * 
+     * All parameters with the same name will be grouped and all duplicated
+     * value to the same parameters will be removed letting no duplicated value
+     * 
+     * If is somehow needed to pass the false to the value better to surround 
+     * with quotes or double quotes otherwith it will be taken as the boolean
+     * false and throw an exception
+     * 
+     * Throws exception if $name param is an nullable value or $value is and empty
+     * string
+     * 
+     * @param string $name
+     * 
+     * @param string $value
+     * 
+     * @return array
+     * 
+     * @throws \Exceptions\InvalidDataException
+     * 
+     */
+    public function addParam($name, $value)
+    {
+
+        if ((!is_string($name) || empty($name)) || empty($value)) {
+            throw new \Exceptions\InvalidDataException(
+                    "Param/value must be an non-empty string");
+        }
+
+        $param = isset($this->_params[$name]) ?
+                $this->_params[$name] :
+                array();
+
+        $param[] = (string) $value;
+
+        $this->_params[$name] = array_unique($param);
+
+        return $this->_params;
     }
 
 }

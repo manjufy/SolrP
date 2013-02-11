@@ -1,8 +1,9 @@
 <?php
+
 namespace Exceptions;
 
 /**
- * Used when any data is not according to its expected value or type
+ * Used when any data structure is not according to expectation
  * 
  * @author Leandro Magalhaes <le.fatecpd@gmail.com>
  * 
@@ -12,4 +13,4 @@ namespace Exceptions;
  * 
  * @subpackage Exception
  */
-class InvalidDataException extends \Exception {}
+class InvalidStructureException extends \Exception {}

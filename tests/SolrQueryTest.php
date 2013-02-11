@@ -129,13 +129,14 @@ class SolrQueryTest extends \PHPUnit_Framework_TestCase
         $this->assertCount(2, $fieldArray);
         $this->assertSame($fieldArray, $query->getFieldsList());
     }
-    
-    public function testSetFieldList(){
+
+    public function testSetFieldList()
+    {
         $query = new SolrQuery();
         $fieldList = $query->setFieldList(
-            array('field1', 'field2', 'field3', 'field2'));
-        
-        $this->assertEquals(array('field1','field2', 'field3'), $fieldList);
+                array('field1', 'field2', 'field3', 'field2'));
+
+        $this->assertEquals(array('field1', 'field2', 'field3'), $fieldList);
         $this->assertCount(3, $fieldList);
     }
 
@@ -151,6 +152,149 @@ class SolrQueryTest extends \PHPUnit_Framework_TestCase
     public function testAssemble()
     {
         
+    }
+
+    public function testAddSingleParam()
+    {
+        $query = new SolrQuery();
+        $paramArr = $query->addParam('param1', 'value1');
+
+        $this->assertCount(1, $paramArr);
+        $this->assertCount(1, $paramArr['param1']);
+        $this->assertEquals($paramArr['param1'], array('value1'));
+    }
+
+    public function testAddMultipleValeusByParam()
+    {
+        $query = new SolrQuery();
+        $query->addParam('param1', 'value2');
+        $paramArr = $query->addParam('param1', 'value1');
+
+        $this->assertCount(2, $paramArr['param1']);
+        $this->assertEquals(array('value2', 'value1'), $paramArr['param1']);
+    }
+
+    public function testAddMultiParams()
+    {
+        $query = new SolrQuery();
+
+        $query->addParam('param1', 'param1_value');
+        $paramsArr = $query->addParam('param2', 'param2_value');
+
+        $this->assertCount(2, $paramsArr);
+        $this->assertEquals(array('param1', 'param2'), array_keys($paramsArr));
+    }
+
+    /**
+     * @expectedException \Exceptions\InvalidDataException
+     * @dataProvider providerTestAddParamShouldThrowException
+     */
+    public function testAddParamShouldThrowException($paramName, $paramValue)
+    {
+        $query = new SolrQuery();
+        $query->addParam($paramName, $paramValue);
+    }
+
+    public static function providerTestAddParamShouldThrowException()
+    {
+        return array(
+            array(1, ''),
+            array(null, ''),
+            array(false, ''),
+            array('', ''),
+            array('param1', ''),
+            array('param', null),
+            array('param', false),
+        );
+    }
+
+    public function testSetParams()
+    {
+        $query = new SolrQuery();
+
+        $arrParams = $query->setParams(array('param1' => array('value1')));
+        $this->assertCount(1, $arrParams);
+    }
+
+    public function testSetParamWithMultipleValues()
+    {
+        $query = new SolrQuery();
+
+        $arrParams = $query->setParams(
+                array(
+                    'param1' => array('value1', 'value2'),
+                    'param2' => array('value1')
+                ));
+
+
+        $this->assertCount(2, $arrParams);
+        $this->assertCount(2, $arrParams['param1']);
+        $this->assertCount(1, $arrParams['param2']);
+    }
+
+    public function testSetSameParamsWithDifferentValuesShouldMergeValues()
+    {
+        $query = new SolrQuery();
+        $arrayParam = array('param1' => array('value1'));
+        $query->setParams(array('param1' => array('value1', 'value2')));
+        $query->setParams($arrayParam);
+
+        $allParams = $query->getParams();
+
+        $this->assertEquals(
+                array("param1" => array('value1', 'value2')), $allParams);
+
+        $this->assertCount(2, $allParams['param1']);
+    }
+
+    /**
+     * @expectedException Exceptions\InvalidStructureException
+     */
+    public function testSetParamsShouldThrowException()
+    {
+        $query = new SolrQuery();
+        $query->setParams(array(''));
+    }
+
+    public function testSetParamsWithEmptyArrayShouldResetParams()
+    {
+        $query = new SolrQuery();
+        $query->addParam("param1", "value1");
+        $this->assertCount(1, $query->getParams());
+
+        $params = $query->setParams(array());
+        $this->assertEmpty($params);
+    }
+
+    /**
+     * @dataProvider providerTestIsValidParamsStructure
+     */
+    public function testIsValidParamsStructure($structure, $expected)
+    {
+        $query = new SolrQuery();
+        $this->assertEquals(
+                $query->isValidParamsStructure($structure), $expected);
+    }
+
+    public function providerTestIsValidParamsStructure()
+    {
+        return array(
+            array(
+                array(), true,
+            ),
+            array(
+                array(''), false
+            ),
+            array(
+                array(array()), false
+            ),
+            array(
+                array('param' => ''), false
+            ),
+            array(
+                array('param' => array()), true
+            )
+        );
     }
 
 }
