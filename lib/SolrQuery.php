@@ -50,6 +50,12 @@ class SolrQuery
      */
     private $_sortFields = array();
 
+    /**
+     * Default query
+     * @var string 
+     */
+    private $_query = "*:*";
+
     public function __construct()
     {
         
@@ -122,11 +128,11 @@ class SolrQuery
     /**
      * Sets an array with the fields to be sorted and the sorting orientation
      * 
-     * The array must be an key=>value array where key is the sorting field
-     * and value is the sorting orientation. E.g. array('field_name' => 'asc')
+     * The array must be an array containing two values where first value is the sorting field
+     * and second value is the sorting orientation. E.g. array('field_name', 'asc')
      * 
      * Many fields can be set at the same time if wrapped in and array e.g.
-     * array( array('field1' => 'desc'), array('field2' => 'asc')) should add 
+     * array( array('field1', 'desc'), array('field2', 'asc')) should add 
      * field1 as desc and field2 as asc
      * 
      * Use pre-defined constants to sort, 
@@ -384,6 +390,62 @@ class SolrQuery
         $this->_params[$name] = array_unique($param);
 
         return $this->_params;
+    }
+
+    public function getQuery()
+    {
+        return $this->_query;
+    }
+
+    public function parseParams()
+    {
+
+        if (empty($this->_params)) {
+            return '';
+        }
+
+        $parts = array();
+        foreach ($this->_params as $name => $value) {
+            if (is_array($value)) {
+                $value = implode(" OR ", $value);
+            }
+            $parts[] = $name . ":(" . $value . ")";
+        }
+
+        return "&fq=" . implode(" AND ", $parts);
+    }
+    
+    protected function parseSorting(){
+
+        if(empty($this->_sortFields)){
+            return '';
+        }
+        
+        $sort = array();
+        foreach($this->_sortFields as $key => $value){
+            $sort[] =  $key . " ". $value;
+        }
+        return '&sort=' . implode(",", $sort); 
+    }
+
+    protected function normalizeQuery($query)
+    {
+        return str_replace(" ", "+", $query);
+    }
+
+    /**
+     * Create a solr query based on the attributes set.
+     * The attributes used are facet, fields, params and query .
+     * 
+     * @return string
+     */
+    public function assemble()
+    {
+        $params = $this->parseParams();
+        $sorting = $this->parseSorting();
+        return $this->normalizeQuery(
+            "?q=" . $this->getQuery() . $params . $sorting
+        );
     }
 
 }

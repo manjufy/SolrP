@@ -149,9 +149,31 @@ class SolrQueryTest extends \PHPUnit_Framework_TestCase
         $this->assertEmpty($query->resetFieldList());
     }
 
-    public function testAssemble()
+    public function testAssembleShouldReturDefaultQuery()
     {
+        $query = new SolrQuery();
+        $this->assertEquals("?q=*:*", $query->assemble());
+    }
+    
+    public function testAssembleShouldReturnQueryWithParams(){
+        $query = new SolrQuery();
         
+        $query->setParam("param1", array("value1", "value2"));
+        $query->addParam("param2", "value3");
+        
+        $expected = "?q=*:*&fq=param1:(value1+OR+value2)+AND+param2:(value3)";
+        $this->assertEquals($expected, $query->assemble());
+    }
+    
+    public function testAssembleShouldReturnQueryWithSort(){
+        $solrQuery = new SolrQuery();
+        $solrQuery->setSortFields(
+            array(
+                array("sort1", SolrQuery::SORT_DESC),
+                array("sort2", SolrQuery::SORT_ASC)
+            ));
+        $expected = "?q=*:*&sort=sort1+desc,sort2+asc";
+        $this->assertEquals($expected, $solrQuery->assemble());
     }
 
     public function testAddSingleParam()
